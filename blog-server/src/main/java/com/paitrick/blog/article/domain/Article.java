@@ -1,0 +1,1 @@
+package com.paitrick.blog.article.domain; import java.time.LocalDateTime; public record Article(Long id,String title,String slug,String summary,String content,String coverUrl,String status,Long categoryId,LocalDateTime createdAt,LocalDateTime updatedAt,LocalDateTime publishedAt){}

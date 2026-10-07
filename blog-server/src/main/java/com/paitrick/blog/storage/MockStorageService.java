@@ -1,0 +1,1 @@
+package com.paitrick.blog.storage; import com.paitrick.blog.common.exception.BusinessException; import org.springframework.stereotype.Service; @Service public class MockStorageService implements StorageService{public String upload(String f,byte[] c){throw new BusinessException("storage upload is not enabled in this phase");}public void delete(String url){}}

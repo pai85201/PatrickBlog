@@ -1,0 +1,1 @@
+package com.paitrick.blog.article.dto; import jakarta.validation.constraints.*; import java.util.List; public record ArticleRequest(@NotBlank String title,@NotBlank String slug,String summary,@NotBlank String content,String coverUrl,@Pattern(regexp="DRAFT|PUBLISHED|ARCHIVED") String status,Long categoryId,List<Long> tagIds){}

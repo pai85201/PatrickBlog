@@ -1,0 +1,1 @@
+package com.paitrick.blog.article.dto; import com.paitrick.blog.tag.domain.Tag; import java.time.LocalDateTime; import java.util.List; public record ArticleResponse(Long id,String title,String slug,String summary,String content,String coverUrl,String status,Long categoryId,LocalDateTime createdAt,LocalDateTime updatedAt,LocalDateTime publishedAt,List<Tag> tags){}

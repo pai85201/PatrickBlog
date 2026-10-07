@@ -1,0 +1,1 @@
+<template><header><RouterLink to="/">Paitrick Blog</RouterLink><nav><RouterLink to="/categories">分类</RouterLink><RouterLink to="/tags">标签</RouterLink><RouterLink to="/admin/articles">管理</RouterLink></nav></header><main><RouterView/></main></template>

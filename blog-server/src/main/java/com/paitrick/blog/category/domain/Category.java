@@ -1,0 +1,1 @@
+package com.paitrick.blog.category.domain; import java.time.LocalDateTime; public record Category(Long id,String name,String slug,String description,LocalDateTime createdAt,LocalDateTime updatedAt){}

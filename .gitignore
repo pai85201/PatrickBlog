@@ -1,0 +1,11 @@
+.env
+**/target/
+**/node_modules/
+**/dist/
+.idea/
+*.iml
+
+
+blog-web/.npm-cache/
+
+*.tsbuildinfo
