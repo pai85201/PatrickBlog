@@ -1,1 +1,7 @@
-package com.paitrick.blog.common.exception; public class BusinessException extends RuntimeException{public BusinessException(String message){super(message);}}
+package com.paitrick.blog.common.exception;
+public class BusinessException extends RuntimeException{
+  public BusinessException(String message){
+    super(message);
+  }
+}
+

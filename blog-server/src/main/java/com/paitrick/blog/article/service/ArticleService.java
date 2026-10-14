@@ -1,2 +1,115 @@
-package com.paitrick.blog.article.service; import com.paitrick.blog.article.domain.Article; import com.paitrick.blog.article.dto.*; import com.paitrick.blog.article.repository.ArticleMapper; import com.paitrick.blog.common.exception.BusinessException; import org.springframework.stereotype.Service; import org.springframework.transaction.annotation.Transactional; import java.time.LocalDateTime; import java.util.*;
-@Service public class ArticleService{private final ArticleMapper m;public ArticleService(ArticleMapper m){this.m=m;}private ArticleResponse out(Article a){return new ArticleResponse(a.id(),a.title(),a.slug(),a.summary(),a.content(),a.coverUrl(),a.status(),a.categoryId(),a.createdAt(),a.updatedAt(),a.publishedAt(),m.tags(a.id()));}public Map<String,Object> published(int page,int size){var rows=m.published(size,(page-1)*size).stream().map(this::out).toList();return Map.of("items",rows,"page",page,"size",size,"total",m.publishedCount());}public ArticleResponse detail(String slug){var a=m.publishedBySlug(slug);if(a==null)throw new BusinessException("article not found");return out(a);}public Map<String,Object> adminList(int page,int size){var rows=m.adminList(size,(page-1)*size).stream().map(this::out).toList();return Map.of("items",rows,"page",page,"size",size,"total",m.count());}public ArticleResponse byId(long id){var a=m.byId(id);if(a==null)throw new BusinessException("article not found");return out(a);}@Transactional public ArticleResponse create(ArticleRequest r){var a=entity(null,r);m.insert(a);tags(a.id(),r.tagIds());return out(m.byId(a.id()));}@Transactional public ArticleResponse update(long id,ArticleRequest r){if(m.byId(id)==null)throw new BusinessException("article not found");m.update(entity(id,r));tags(id,r.tagIds());return out(m.byId(id));}@Transactional public ArticleResponse publish(long id){var a=m.byId(id);if(a==null)throw new BusinessException("article not found");var x=new Article(id,a.title(),a.slug(),a.summary(),a.content(),a.coverUrl(),"PUBLISHED",a.categoryId(),null,null,a.publishedAt()==null?LocalDateTime.now():a.publishedAt());m.update(x);return out(m.byId(id));}@Transactional public void delete(long id){m.clearTags(id);if(m.delete(id)==0)throw new BusinessException("article not found");}private Article entity(Long id,ArticleRequest r){var st=r.status()==null?"DRAFT":r.status();return new Article(id,r.title(),r.slug(),r.summary(),r.content(),r.coverUrl(),st,r.categoryId(),null,null,"PUBLISHED".equals(st)?LocalDateTime.now():null);}private void tags(long id,List<Long> tags){m.clearTags(id);if(tags!=null)for(Long tag:tags)m.addTag(id,tag);}}
+package com.paitrick.blog.article.service;
+
+import com.paitrick.blog.article.domain.Article;
+import com.paitrick.blog.article.dto.ArticleRequest;
+import com.paitrick.blog.article.dto.ArticleResponse;
+import com.paitrick.blog.article.repository.ArticleMapper;
+import com.paitrick.blog.common.exception.BusinessException;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class ArticleService {
+  private final ArticleMapper articleMapper;
+
+  public ArticleService(ArticleMapper articleMapper) {
+    this.articleMapper = articleMapper;
+  }
+
+  public Map<String, Object> published(int page, int size) {
+    var articles = articleMapper.published(size, (page - 1) * size).stream().map(this::toResponse).toList();
+    return Map.of("items", articles, "page", page, "size", size, "total", articleMapper.publishedCount());
+  }
+
+  public ArticleResponse detail(String slug) {
+    return toResponse(requirePublishedArticle(slug));
+  }
+
+  public Map<String, Object> adminList(int page, int size) {
+    var articles = articleMapper.adminList(size, (page - 1) * size).stream().map(this::toResponse).toList();
+    return Map.of("items", articles, "page", page, "size", size, "total", articleMapper.count());
+  }
+
+  public ArticleResponse byId(long id) {
+    return toResponse(requireArticle(id));
+  }
+
+  @Transactional
+  public ArticleResponse create(ArticleRequest request) {
+    Article article = toEntity(null, request);
+    articleMapper.insert(article);
+    replaceTags(article.getId(), request.getTagIds());
+    return byId(article.getId());
+  }
+
+  @Transactional
+  public ArticleResponse update(long id, ArticleRequest request) {
+    requireArticle(id);
+    articleMapper.update(toEntity(id, request));
+    replaceTags(id, request.getTagIds());
+    return byId(id);
+  }
+
+  @Transactional
+  public ArticleResponse publish(long id) {
+    Article article = requireArticle(id);
+    Article publishedArticle = new Article(
+        id, article.getTitle(), article.getSlug(), article.getSummary(), article.getContent(),
+        article.getCoverUrl(), "PUBLISHED", article.getCategoryId(), null, null,
+        article.getPublishedAt() == null ? LocalDateTime.now() : article.getPublishedAt());
+    articleMapper.update(publishedArticle);
+    return byId(id);
+  }
+
+  @Transactional
+  public void delete(long id) {
+    articleMapper.clearTags(id);
+    if (articleMapper.delete(id) == 0) {
+      throw new BusinessException("article not found");
+    }
+  }
+
+  private ArticleResponse toResponse(Article article) {
+    return new ArticleResponse(
+        article.getId(), article.getTitle(), article.getSlug(), article.getSummary(),
+        article.getContent(), article.getCoverUrl(), article.getStatus(), article.getCategoryId(),
+        article.getCreatedAt(), article.getUpdatedAt(), article.getPublishedAt(),
+        articleMapper.tags(article.getId()));
+  }
+
+  private Article requirePublishedArticle(String slug) {
+    Article article = articleMapper.publishedBySlug(slug);
+    if (article == null) {
+      throw new BusinessException("article not found");
+    }
+    return article;
+  }
+
+  private Article requireArticle(long id) {
+    Article article = articleMapper.byId(id);
+    if (article == null) {
+      throw new BusinessException("article not found");
+    }
+    return article;
+  }
+
+  private Article toEntity(Long id, ArticleRequest request) {
+    String status = request.getStatus() == null ? "DRAFT" : request.getStatus();
+    LocalDateTime publishedAt = "PUBLISHED".equals(status) ? LocalDateTime.now() : null;
+    return new Article(
+        id, request.getTitle(), request.getSlug(), request.getSummary(), request.getContent(),
+        request.getCoverUrl(), status, request.getCategoryId(), null, null, publishedAt);
+  }
+
+  private void replaceTags(long articleId, List<Long> tagIds) {
+    articleMapper.clearTags(articleId);
+    if (tagIds != null) {
+      for (Long tagId : tagIds) {
+        articleMapper.addTag(articleId, tagId);
+      }
+    }
+  }
+}

@@ -1,1 +1,21 @@
-package com.paitrick.blog.article.dto; import jakarta.validation.constraints.*; import java.util.List; public record ArticleRequest(@NotBlank String title,@NotBlank String slug,String summary,@NotBlank String content,String coverUrl,@Pattern(regexp="DRAFT|PUBLISHED|ARCHIVED") String status,Long categoryId,List<Long> tagIds){}
+package com.paitrick.blog.article.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import java.util.List;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+public class ArticleRequest {
+  @NotBlank private String title;
+  @NotBlank private String slug;
+  private String summary;
+  @NotBlank private String content;
+  private String coverUrl;
+  @Pattern(regexp = "DRAFT|PUBLISHED|ARCHIVED") private String status;
+  private Long categoryId;
+  private List<Long> tagIds;
+}
+

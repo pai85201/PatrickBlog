@@ -1,1 +1,23 @@
-package com.paitrick.blog.common.config; import org.springframework.boot.context.properties.ConfigurationProperties; @ConfigurationProperties(prefix="app") public record AppProperties(Jwt jwt,Admin admin){public record Jwt(String secret,long expirationHours){} public record Admin(String username,String password){}}
+package com.paitrick.blog.common.config;
+
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@Data
+@ConfigurationProperties(prefix = "app")
+public class AppProperties {
+  private Jwt jwt = new Jwt();
+  private Admin admin = new Admin();
+
+  @Data
+  public static class Jwt {
+    private String secret;
+    private long expirationHours;
+  }
+
+  @Data
+  public static class Admin {
+    private String username;
+    private String password;
+  }
+}

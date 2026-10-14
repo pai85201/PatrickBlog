@@ -1,6 +1,52 @@
-CREATE TABLE admin_user (id BIGINT PRIMARY KEY AUTO_INCREMENT, username VARCHAR(64) NOT NULL UNIQUE, password_hash VARCHAR(100) NOT NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
-CREATE TABLE category (id BIGINT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(100) NOT NULL, slug VARCHAR(120) NOT NULL, description VARCHAR(500), created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, UNIQUE KEY uk_category_slug(slug));
-CREATE TABLE tag (id BIGINT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(100) NOT NULL, slug VARCHAR(120) NOT NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, UNIQUE KEY uk_tag_slug(slug));
-CREATE TABLE article (id BIGINT PRIMARY KEY AUTO_INCREMENT, title VARCHAR(255) NOT NULL, slug VARCHAR(255) NOT NULL, summary VARCHAR(1000), content MEDIUMTEXT NOT NULL, cover_url VARCHAR(1000), status VARCHAR(20) NOT NULL DEFAULT 'DRAFT', category_id BIGINT, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, published_at DATETIME NULL, UNIQUE KEY uk_article_slug(slug), KEY idx_article_status(status), KEY idx_article_published_at(published_at), KEY idx_article_category_id(category_id));
-CREATE TABLE article_tag (article_id BIGINT NOT NULL, tag_id BIGINT NOT NULL, PRIMARY KEY(article_id,tag_id), KEY idx_article_tag_tag_id(tag_id));
--- No database foreign keys: service-layer validation and migration ordering make deployments/backfills safer; joins remain indexed.
+CREATE TABLE admin_user (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(64) NOT NULL UNIQUE,
+  password_hash VARCHAR(100) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE category (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(100) NOT NULL,
+  slug VARCHAR(120) NOT NULL,
+  description VARCHAR(500),
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_category_slug (slug)
+);
+
+CREATE TABLE tag (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(100) NOT NULL,
+  slug VARCHAR(120) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_tag_slug (slug)
+);
+
+CREATE TABLE article (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  title VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) NOT NULL,
+  summary VARCHAR(1000),
+  content MEDIUMTEXT NOT NULL,
+  cover_url VARCHAR(1000),
+  status VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
+  category_id BIGINT,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  published_at DATETIME NULL,
+  UNIQUE KEY uk_article_slug (slug),
+  KEY idx_article_status (status),
+  KEY idx_article_published_at (published_at),
+  KEY idx_article_category_id (category_id)
+);
+
+CREATE TABLE article_tag (
+  article_id BIGINT NOT NULL,
+  tag_id BIGINT NOT NULL,
+  PRIMARY KEY (article_id, tag_id),
+  KEY idx_article_tag_tag_id (tag_id)
+);
+
+-- No physical foreign keys: service-layer validation and migration ordering make deployments/backfills safer; joins remain indexed.
